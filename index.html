@@ -1,0 +1,235 @@
+# Recréer le fichier après réinitialisation de l'état
+
+html_file_path_signature_canvas_final = "/mnt/data/telegramme_generateur_v_final_signature_canvas.html"
+
+html_code_signature_canvas_final = """
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Générateur de Télégramme V9</title>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Homemade+Apple&family=Special+Elite&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier Prime', monospace;
+      background-color: #eee;
+    }
+    .section {
+      width: 1050px;
+      margin: 10px auto;
+      text-align: center;
+    }
+    .section h2 {
+      margin-bottom: 5px;
+      font-size: 18px;
+      color: #333;
+    }
+    .section button {
+      margin: 4px;
+      padding: 6px 12px;
+      background: #800020;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .container {
+      position: relative;
+      width: 768px;
+      height: 1086px;
+      margin: 20px auto;
+      background: url('telegramme_vierge_nettoye.jpeg') no-repeat center center;
+      background-size: contain;
+    }
+    textarea, .editable {
+      position: absolute;
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #111;
+      resize: none;
+      overflow: visible;
+    }
+    .editable {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    #exped, #dest {
+      font-family: 'Homemade Apple', cursive;
+    }
+    #date {
+      font-family: 'Special Elite', monospace;
+    }
+    #adresse {
+      font-family: 'Special Elite', monospace;
+      color: #111;
+      font-size: 14px;
+      line-height: 1.5;
+      top: 235px;
+      left: 10px;
+      width: 735px;
+      height: 80px;
+    }
+    #message {
+      font-family: 'Special Elite', monospace;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.5;
+      top: 310px;
+      left: 10px;
+      width: 735px;
+      height: 200px;
+    }
+    .poste-tampon-img {
+      position: absolute;
+      width: 100px;
+      height: auto;
+      top: 125px;
+      left: 665px;
+      transform: rotate(-15deg);
+      cursor: move;
+    }
+    #blasonImage {
+      position: absolute;
+      top: 350px;
+      left: 16%;
+      width: 550px;
+      opacity: 0.5;
+      z-index: 0;
+      display: none;
+      pointer-events: none;
+    }
+    .tampon-texte {
+      position: absolute;
+      top: 650px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-55deg);
+      font-size: 90px;
+      font-family: 'Courier Prime', monospace;
+      font-weight: bold;
+      color: #7b1e2b;
+      opacity: 0.2;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+      white-space: nowrap;
+    }
+    .signature-zone {
+      position: absolute;
+      top: 1030px;
+      left: 610px;
+      background: transparent;
+      z-index: 2;
+      border: 1px solid #555;
+    }
+  </style>
+</head>
+<body>
+
+<div class="section">
+  <button onclick="download()">📥 Télécharger</button>
+  <button onclick="toggleTextStamp()">Tampon</button>
+  <button onclick="toggleBlason()">Blason</button>
+</div>
+
+<div class="section">
+  <h2>📌 Tampon de poste (1 seul actif)</h2>
+  <button onclick="setPoste('particulier')">Citoyen</button>
+  <button onclick="setPoste('gouvernement')">Gouvernement</button>
+  <button onclick="setPoste('police')">Police</button>
+  <button onclick="setPoste('medecin')">Santé</button>
+</div>
+
+<div class="container" id="telegramme">
+  <img id="blasonImage" src="blason.png" />
+  <div id="stampText" class="tampon-texte"></div>
+  <textarea id="exped" style="top: 168px; left: 315px; width: 300px; font-size: 12px;">Expéditeur</textarea>
+  <textarea id="dest" style="top: 168px; left: 535px; width: 300px; font-size: 12px;">Destinataire</textarea>
+  <textarea id="date" style="top: 202px; left: 225px; width: 800px;font-weight: bold; font-size: 12px;">Type/lieu/date</textarea>
+  <div id="adresse" class="editable" contenteditable="true">Nom+Role+Adresse...</div>
+  <div id="message" class="editable" contenteditable="true">Message...</div>
+  <canvas id="signatureCanvas" width="150" height="40" class="signature-zone"></canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let currentPoste = null;
+let stampIndex = 0;
+const stampLabels = ['SECRET DÉFENSE', 'CONFIDENTIEL', 'URGENT' ,''];
+
+function setPoste(role) {
+  if (currentPoste) currentPoste.remove();
+  const img = document.createElement('img');
+  img.src = 'tampon_' + role + '.png';
+  img.className = 'poste-tampon-img';
+  document.getElementById('telegramme').appendChild(img);
+  currentPoste = img;
+}
+
+function toggleTextStamp() {
+  const stampDiv = document.getElementById("stampText");
+  const currentLabel = stampLabels[stampIndex];
+
+  if (currentLabel === '') {
+    stampDiv.textContent = '';
+    stampDiv.style.display = 'none';
+  } else {
+    stampDiv.textContent = currentLabel;
+    stampDiv.style.display = 'block';
+  }
+
+  stampIndex = (stampIndex + 1) % stampLabels.length;
+}
+
+function toggleBlason() {
+  const blason = document.getElementById("blasonImage");
+  blason.style.display = (blason.style.display === "none" || blason.style.display === "") ? "block" : "none";
+}
+
+function download() {
+  document.getElementById("signatureCanvas").style.border = "none";
+  html2canvas(document.getElementById("telegramme")).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "telegramme.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+
+const canvas = document.getElementById("signatureCanvas");
+const ctx = canvas.getContext("2d");
+let isDrawing = false;
+
+canvas.addEventListener("mousedown", (e) => {
+  isDrawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (isDrawing) {
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+  }
+});
+
+canvas.addEventListener("mouseup", () => {
+  isDrawing = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+  isDrawing = false;
+});
+</script>
+
+</body>
+</html>
+"""
+
+with open(html_file_path_signature_canvas_final, "w", encoding="utf-8") as f:
+    f.write(html_code_signature_canvas_final)
+
+html_file_path_signature_canvas_final
