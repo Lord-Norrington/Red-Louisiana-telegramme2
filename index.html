@@ -148,7 +148,7 @@ html_code_signature_canvas_final = """
   <div id="stampText" class="tampon-texte"></div>
   <textarea id="exped" style="top: 168px; left: 315px; width: 300px; font-size: 12px;">Expéditeur</textarea>
   <textarea id="dest" style="top: 168px; left: 535px; width: 300px; font-size: 12px;">Destinataire</textarea>
-  <textarea id="date" style="top: 202px; left: 225px; width: 800px;font-weight: bold; font-size: 12px;">Type/lieu/date</textarea>
+  <textarea id="date" style="top: 202px; left: 225px; width: 800px;font-weight: bold; font-size: 14px;">Type/lieu/date</textarea>
   <div id="adresse" class="editable" contenteditable="true">Nom+Role+Adresse...</div>
   <div id="message" class="editable" contenteditable="true">Message...</div>
   <canvas id="signatureCanvas" width="150" height="40" class="signature-zone"></canvas>
@@ -233,3 +233,4 @@ with open(html_file_path_signature_canvas_final, "w", encoding="utf-8") as f:
     f.write(html_code_signature_canvas_final)
 
 html_file_path_signature_canvas_final
+
